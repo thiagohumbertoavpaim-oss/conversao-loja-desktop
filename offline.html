@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+  <title>Conversão da Loja</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #f1f3f7; color: #17202e; font-family: "Segoe UI", Arial, sans-serif; }
+    .caixa { background: #fff; border: 1px solid #d9dee6; border-radius: 16px; padding: 32px; max-width: 460px; text-align: center; }
+    h1 { margin: 0 0 8px; font-size: 24px; color: #22365a; }
+    p { margin: 8px 0; line-height: 1.45; }
+    .erro { color: #b3261e; font-weight: 600; }
+    button { margin-top: 18px; min-height: 52px; padding: 0 28px; border: 0; border-radius: 12px;
+      background: #22365a; color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; }
+    small { display: block; margin-top: 14px; color: #56617a; }
+  </style>
+</head>
+<body>
+  <div class="caixa">
+    <h1>Conversão da Loja</h1>
+    <p id="mensagem" class="erro">Sem conexão com a internet.</p>
+    <p>Verifique a internet do computador. O sistema tenta conectar de novo sozinho.</p>
+    <button id="botao" type="button">Tentar de novo</button>
+    <small id="detalhe"></small>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    if (params.get("erro")) {
+      document.getElementById("mensagem").textContent = params.get("erro");
+    }
+    document.getElementById("botao").addEventListener("click", () => window.appDesktop.tentarNovamente());
+  </script>
+</body>
+</html>

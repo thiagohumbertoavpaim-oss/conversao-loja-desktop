@@ -1,0 +1,45 @@
+{
+  "name": "conversao-da-loja-desktop",
+  "productName": "Conversão da Loja",
+  "version": "1.0.0",
+  "description": "Conversão da Loja — aplicativo para Windows",
+  "author": "Conversão da Loja",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "dist": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "br.com.conversaodaloja.app",
+    "productName": "Conversão da Loja",
+    "executableName": "ConversaoDaLoja",
+    "copyright": "Conversão da Loja",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "preload.js", "url.js", "offline.html", "config.json", "package.json"],
+    "artifactName": "Instalador-Conversao-da-Loja-${version}.${ext}",
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Conversão da Loja",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": true,
+      "language": "1046"
+    }
+  }
+}
