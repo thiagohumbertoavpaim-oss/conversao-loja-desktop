@@ -1,0 +1,31 @@
+name: Gerar instalador Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  instalador:
+    runs-on: windows-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar o Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Gerar o instalador (.exe)
+        run: npm run dist
+
+      - name: Guardar o instalador para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-windows
+          path: dist/*.exe
+          if-no-files-found: error
