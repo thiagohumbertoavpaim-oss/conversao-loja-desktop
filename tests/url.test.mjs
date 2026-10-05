@@ -41,7 +41,7 @@ test("package.json: instalador NSIS com atalho na área de trabalho e ícone", (
   assert.equal(pkg.build.nsis.createDesktopShortcut, true);
   assert.equal(pkg.build.nsis.createStartMenuShortcut, true);
   assert.equal(pkg.build.win.icon, "build/icon.ico");
-  for (const f of ["main.js", "preload.js", "url.js", "offline.html", "config.json"]) {
+  for (const f of ["main.js", "preload.js", "url.js", "modo.js", "offline.html", "config.json"]) {
     assert.ok(pkg.build.files.includes(f), f);
     assert.ok(fs.existsSync(new URL("../" + f, import.meta.url)), f);
   }

@@ -27,3 +27,8 @@ Só se mudar o endereço do sistema ou o ícone. Mudanças no sistema não exige
 ## Testar no seu computador (opcional, para quem programa)
 npm install
 npm start
+
+## Se a janela abrir em branco
+O aplicativo guarda um registro em `diagnostico.log` (aperte Ctrl+Shift+L dentro do aplicativo para abrir a pasta).
+Se a janela travar ao abrir, ele reinicia sozinho em até 3 "modos de compatibilidade" (sem placa de vídeo, sem
+proteção de código do renderizador, sem sandbox) e guarda o modo que funcionou. Isso pode levar uns 30 segundos na primeira vez.

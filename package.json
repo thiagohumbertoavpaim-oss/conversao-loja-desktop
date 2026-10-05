@@ -1,7 +1,7 @@
 {
   "name": "conversao-da-loja-desktop",
   "productName": "Conversão da Loja",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Conversão da Loja — aplicativo para Windows",
   "author": "Conversão da Loja",
   "private": true,
@@ -21,7 +21,7 @@
     "executableName": "ConversaoDaLoja",
     "copyright": "Conversão da Loja",
     "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["main.js", "preload.js", "url.js", "offline.html", "config.json", "package.json"],
+    "files": ["main.js", "preload.js", "url.js", "modo.js", "offline.html", "config.json", "package.json"],
     "artifactName": "Instalador-Conversao-da-Loja-${version}.${ext}",
     "win": {
       "icon": "build/icon.ico",

@@ -6,10 +6,40 @@ const { app, BrowserWindow, Menu, ipcMain, session, shell } = require("electron"
 const path = require("path");
 const fs = require("fs");
 const { validarUrl, mesmaOrigem } = require("./url");
+const { NIVEL_MAXIMO, configuracaoDoNivel, normalizarNivel, proximoNivel } = require("./modo");
 
-// Em alguns computadores (placa de vídeo antiga ou driver com problema) a janela abre toda em branco.
-// Desenhar sem aceleração de vídeo evita isso e é suficiente para este sistema.
+// ---------- modo de compatibilidade ----------
+// Se a janela travar ao abrir (antivírus, placa de vídeo...), o aplicativo reinicia sozinho
+// em um modo mais seguro e guarda qual modo funcionou neste computador.
+function arquivoModo() {
+  return path.join(app.getPath("userData"), "modo.json");
+}
+
+function lerNivel() {
+  try {
+    return normalizarNivel(JSON.parse(fs.readFileSync(arquivoModo(), "utf8")).nivel);
+  } catch {
+    return 0;
+  }
+}
+
+function salvarNivel(nivel) {
+  try {
+    fs.writeFileSync(arquivoModo(), JSON.stringify({ nivel }));
+  } catch {
+    // ignora
+  }
+}
+
+const nivelAtual = lerNivel();
+const modo = configuracaoDoNivel(nivelAtual);
+
+// Desenhar sem aceleração de vídeo é suficiente para este sistema e evita janelas em branco.
 app.disableHardwareAcceleration();
+for (const [nome, valor] of modo.switches) {
+  if (valor) app.commandLine.appendSwitch(nome, valor);
+  else app.commandLine.appendSwitch(nome);
+}
 
 const TITULO = "Conversão da Loja";
 const TEMPO_MAXIMO_CARGA_MS = 25000;
@@ -17,6 +47,8 @@ let janela = null;
 let urlSistema = null;
 let timerReconectar = null;
 let timerCarga = null;
+let quedas = 0; // vezes que a janela parou de funcionar nesta abertura
+let estavel = false; // true depois de alguns segundos funcionando
 
 // ---------- registro de diagnóstico (para descobrir problemas) ----------
 function arquivoLog() {
@@ -38,7 +70,7 @@ function iniciarLog() {
   } catch {
     // ignora
   }
-  registrar(`--- aplicativo aberto (versão ${app.getVersion()}, electron ${process.versions.electron}) ---`);
+  registrar(`--- aplicativo aberto (versão ${app.getVersion()}, electron ${process.versions.electron}, windows ${process.getSystemVersion ? process.getSystemVersion() : "?"}, modo ${nivelAtual}) ---`);
 }
 
 // ---------- configuração ----------
@@ -104,7 +136,7 @@ function criarJanela() {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
+      sandbox: !modo.semSandbox,
       devTools: true, // só abre com F12 (para diagnóstico)
       spellcheck: false,
     },
@@ -157,6 +189,12 @@ function criarJanela() {
   janela.webContents.on("did-finish-load", () => {
     clearTimeout(timerCarga);
     registrar(`carregou: ${janela.webContents.getURL()}`);
+    setTimeout(() => {
+      if (!estavel) {
+        estavel = true;
+        registrar(`funcionando de forma estável no modo ${nivelAtual}`);
+      }
+    }, 10000);
   });
   janela.webContents.on("console-message", (evento, nivelAntigo, mensagemAntiga) => {
     const nivel = String(evento?.level ?? nivelAntigo);
@@ -165,7 +203,27 @@ function criarJanela() {
   });
   janela.webContents.on("render-process-gone", (_ev, detalhes) => {
     registrar(`processo da janela parou: ${detalhes?.reason}`);
-    if (detalhes?.reason !== "clean-exit") setTimeout(carregarSistema, 2000);
+    if (detalhes?.reason === "clean-exit") return;
+    quedas += 1;
+
+    // Travou duas vezes logo ao abrir: reinicia em um modo de compatibilidade mais seguro.
+    if (!estavel && quedas >= 2) {
+      if (nivelAtual < NIVEL_MAXIMO) {
+        const novo = proximoNivel(nivelAtual);
+        salvarNivel(novo);
+        registrar(`reiniciando no modo de compatibilidade ${novo}`);
+        app.relaunch();
+        app.exit(0);
+        return;
+      }
+      registrar("não funcionou em nenhum modo");
+      mostrarOffline(
+        "Não foi possível abrir o sistema neste computador. Aperte Ctrl+Shift+L e envie o arquivo diagnostico.log para o suporte.",
+      );
+      return;
+    }
+    if (quedas >= 6) return; // evita ficar tentando para sempre
+    setTimeout(carregarSistema, 2000);
   });
   janela.webContents.on("unresponsive", () => registrar("janela sem resposta"));
 
